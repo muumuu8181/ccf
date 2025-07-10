@@ -45,9 +45,9 @@ mkdir -p ~/.claude
 # メインスクリプトのダウンロード
 print_info "⬇️  メインスクリプトをダウンロード中..."
 if command -v curl &> /dev/null; then
-    curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/ccf/main/claude-complete.py -o ~/.claude/claude-complete.py
+    curl -fsSL https://raw.githubusercontent.com/muumuu8181/ccf/main/claude-complete.py -o ~/.claude/claude-complete.py
 elif command -v wget &> /dev/null; then
-    wget -q https://raw.githubusercontent.com/YOUR_USERNAME/ccf/main/claude-complete.py -O ~/.claude/claude-complete.py
+    wget -q https://raw.githubusercontent.com/muumuu8181/ccf/main/claude-complete.py -O ~/.claude/claude-complete.py
 else
     print_error "curl または wget が必要です。"
     exit 1
@@ -97,7 +97,7 @@ echo "1. 新しいターミナルを開くか、'source $SHELL_RC' を実行"
 echo "2. 環境変数を設定: 'ccf --setup' で詳細確認"
 echo "3. ccf を実行: 'ccf'"
 echo ""
-print_info "詳細な使用方法: https://github.com/YOUR_USERNAME/ccf"
+print_info "詳細な使用方法: https://github.com/muumuu8181/ccf"
 
 # 設定確認の提案
 echo ""
