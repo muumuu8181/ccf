@@ -200,17 +200,25 @@ class ClaudeCompleteSystem:
         else:
             return "general"
     
-    def setup_claude_md(self, project_type):
-        """CLAUDE.mdの自動設定"""
+    def setup_claude_md(self, project_type, force_setup=False):
+        """CLAUDE.mdの自動設定（--force-setupオプションで強制上書き可能）"""
         print("📋 CLAUDE.mdを設定中...")
         
         claude_md_path = self.work_dir / "CLAUDE.md"
-        if not claude_md_path.exists():
+        if not claude_md_path.exists() or force_setup:
+            if force_setup and claude_md_path.exists():
+                print("⚠️  強制モード: 既存のCLAUDE.mdを上書きします")
+            
             # 基本設定をコピー
             base_md = self.claude_dir / "base-CLAUDE.md"
             if base_md.exists():
                 with open(base_md, 'r') as src, open(claude_md_path, 'w') as dst:
                     dst.write(src.read())
+                print(f"✅ base-CLAUDE.mdからコピーしました")
+            else:
+                print("⚠️  base-CLAUDE.mdが見つかりません。基本的なCLAUDE.mdを作成します。")
+                with open(claude_md_path, 'w') as dst:
+                    dst.write("# Claude Code 基本設定\n\n## 🎯 起動時の特別ルール\n**重要**: セッション開始時には必ず最初に \"Hello! CCF (Claude Code Force) 起動しました！🚀 今日も効率的に作業を進めましょう！\" と挨拶する\n\n## 🚀 基本動作方針\n- **許可を求めずに実行**: 可能な限り自分で判断して全て進める\n")
             
             # プロジェクト固有情報を追加
             with open(claude_md_path, 'a') as f:
@@ -230,7 +238,7 @@ class ClaudeCompleteSystem:
             
             print("✅ CLAUDE.mdを作成しました")
         else:
-            print("✅ 既存のCLAUDE.mdを使用します")
+            print("✅ 既存のCLAUDE.mdを使用します（--force-setupで強制更新可能）")
     
     def apply_project_settings(self, project_type):
         """プロジェクト設定を適用"""
@@ -292,13 +300,14 @@ class ClaudeCompleteSystem:
                 if choice != 'y':
                     break
     
-    def run(self, project_type=None, additional_args=None, parallel_mode=True, skip_cleanup=False):
+    def run(self, project_type=None, additional_args=None, parallel_mode=True, skip_cleanup=False, force_setup=False):
         """メイン実行関数"""
         if additional_args is None:
             additional_args = []
             
         self.skip_cleanup = skip_cleanup
-        self.log_action(f"ccfコマンド開始 - 作業ディレクトリ: {self.work_dir}, 並列モード: {parallel_mode}, クリーンアップスキップ: {skip_cleanup}")
+        self.force_setup = force_setup
+        self.log_action(f"ccfコマンド開始 - 作業ディレクトリ: {self.work_dir}, 並列モード: {parallel_mode}, クリーンアップスキップ: {skip_cleanup}, 強制セットアップ: {force_setup}")
         print("🎯 Claude Code 完全自動化システム")
         print(f"作業ディレクトリ: {self.work_dir}")
         if skip_cleanup:
@@ -307,6 +316,9 @@ class ClaudeCompleteSystem:
             print("🔄 並列実行モード: 他のClaude Codeセッションを保護")
         else:
             print("🔄 通常モード: 他のClaude Codeセッションを終了")
+        
+        if force_setup:
+            print("⚡ 強制セットアップモード: CLAUDE.mdを強制更新")
         print("")
         
         # 1. プロセスクリーンアップ
@@ -333,7 +345,7 @@ class ClaudeCompleteSystem:
         self.project_type = project_type
         
         # 4. 設定の準備
-        self.setup_claude_md(project_type)
+        self.setup_claude_md(project_type, force_setup=getattr(self, 'force_setup', False))
         self.apply_project_settings(project_type)
         
         # 5. Claude Code起動
@@ -352,6 +364,8 @@ def main():
                        help='セーフモード: 他のClaude Codeセッションを終了せずに新しいセッションを開始')
     parser.add_argument('--setup', action='store_true',
                        help='初期設定モード: 環境変数や設定ファイルを作成')
+    parser.add_argument('--force-setup', action='store_true',
+                       help='強制セットアップ: 既存のCLAUDE.mdを強制上書きしてbase-CLAUDE.mdから再作成')
     parser.add_argument('args', nargs='*', help='Claude Codeに渡す追加引数')
     
     args = parser.parse_args()
@@ -372,9 +386,10 @@ def main():
     # デフォルトは並列モード（--no-parallelが指定されていない場合）
     parallel_mode = not args.no_parallel
     skip_cleanup = args.no_cleanup or not args.no_parallel  # 並列モードまたは--no-cleanupでクリーンアップスキップ
+    force_setup = getattr(args, 'force_setup', False)  # --force-setupオプション
     
     system = ClaudeCompleteSystem()
-    success = system.run(args.project_type, args.args, parallel_mode, skip_cleanup)
+    success = system.run(args.project_type, args.args, parallel_mode, skip_cleanup, force_setup)
     
     if not success:
         sys.exit(1)
