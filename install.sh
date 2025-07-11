@@ -57,6 +57,14 @@ fi
 print_info "🔧 実行権限を設定中..."
 chmod +x ~/.claude/claude-complete.py
 
+# base-CLAUDE.mdのダウンロード
+print_info "📋 CCF設定ファイルをダウンロード中..."
+if command -v curl &> /dev/null; then
+    curl -fsSL https://raw.githubusercontent.com/muumuu8181/ccf/main/base-CLAUDE.md -o ~/.claude/base-CLAUDE.md
+elif command -v wget &> /dev/null; then
+    wget -q https://raw.githubusercontent.com/muumuu8181/ccf/main/base-CLAUDE.md -O ~/.claude/base-CLAUDE.md
+fi
+
 # シェル検出とエイリアス設定
 print_info "⚙️  エイリアスを設定中..."
 SHELL_RC=""
