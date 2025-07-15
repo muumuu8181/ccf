@@ -1,0 +1,17 @@
+# Ensure shell scripts always use LF line endings
+*.sh text eol=lf
+
+# Ensure Python scripts use LF line endings  
+*.py text eol=lf
+
+# Ensure markdown files use LF line endings
+*.md text eol=lf
+
+# Treat these as binary files (no line ending conversion)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.zip binary
+*.tar.gz binary
